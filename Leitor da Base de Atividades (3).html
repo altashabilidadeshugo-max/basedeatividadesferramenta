@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Leitor da Base de Atividades</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#f6f7f9;--cd:#fff;--tx:#1b1f24;--mu:#5d6772;--bd:#dfe3e8;--ac:#2563eb;--ab:#e6eefc;--wn:#92400e;--wb:#fef3c7;--er:#b91c1c;--eb:#fee2e2;--ok:#15803d;--ob:#dcfce7;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171b;--cd:#1e2329;--tx:#e8ebee;--mu:#9aa5b1;--bd:#333b44;--ac:#7aa7ff;--ab:#1f2e4d;--wn:#fcd34d;--wb:#3d3213;--er:#fca5a5;--eb:#4a1d1d;--ok:#86efac;--ob:#16361f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171b;--cd:#1e2329;--tx:#e8ebee;--mu:#9aa5b1;--bd:#333b44;--ac:#7aa7ff;--ab:#1f2e4d;--wn:#fcd34d;--wb:#3d3213;--er:#fca5a5;--eb:#4a1d1d;--ok:#86efac;--ob:#16361f;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1300px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 12px}h2{font-size:15px;margin:0 0 8px}
+.card{background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:12px}
+.up{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.drop{display:block;border:2px dashed var(--bd);border-radius:10px;padding:14px;text-align:center;cursor:pointer;color:var(--mu)}
+.drop:hover,.drop.ov{border-color:var(--ac);background:var(--ab)}.drop input{display:none}
+.drop b{display:block;color:var(--tx)}.st{margin-top:6px;font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--bd);border-radius:999px;padding:3px 10px;font-size:13px;cursor:pointer;background:var(--cd);color:var(--tx)}
+.chip.on{background:var(--ab);border-color:var(--ac);color:var(--ac);font-weight:600}
+.tabs{display:flex;gap:6px;margin:8px 0}
+.tab{padding:7px 14px;border-radius:8px;border:1px solid var(--bd);background:var(--cd);color:var(--tx);cursor:pointer;font:inherit}
+.tab.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+input[type=search],select{font:inherit;padding:7px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--cd);color:var(--tx);min-width:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}.grow{flex:1;min-width:200px}
+details.fo{border:1px solid var(--bd);border-radius:10px;background:var(--cd);margin-bottom:10px}
+details.fo>summary{cursor:pointer;padding:10px 12px;font-weight:700;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fb{padding:0 12px 12px}
+.gc{border:1px solid var(--bd);border-radius:8px;padding:10px;margin-top:8px}
+.gt{font-weight:600;font-size:14px;word-break:break-word}.sub{color:var(--mu);font-size:12px;margin:2px 0 6px}
+.fr{display:grid;grid-template-columns:190px 1fr;gap:8px;padding:5px 0;border-top:1px solid var(--bd);font-size:14px}
+@media(max-width:600px){.fr{grid-template-columns:1fr}}
+.fn{color:var(--mu);font-size:12px;font-weight:600;text-transform:uppercase}
+.b{display:inline-block;border-radius:6px;padding:1px 7px;font-size:12px;font-weight:600;margin:0 4px 2px 0}
+.b.wn{background:var(--wb);color:var(--wn)}.b.er{background:var(--eb);color:var(--er)}.b.ok{background:var(--ob);color:var(--ok)}.b.ac{background:var(--ab);color:var(--ac)}
+.mu{color:var(--mu)}.ok{color:var(--ok);font-weight:600}.no{color:var(--er);font-weight:600}
+.vals>div{padding:1px 0}
+.tw{overflow-x:auto;margin-top:6px}table{border-collapse:collapse;font-size:12.5px;min-width:100%}
+th,td{border:1px solid var(--bd);padding:4px 6px;text-align:left;vertical-align:top}th{background:var(--ab)}
+button.sm{font:inherit;font-size:12px;padding:3px 9px;border-radius:6px;border:1px solid var(--bd);background:var(--cd);color:var(--tx);cursor:pointer}
+.hid{display:none!important}td.dv{background:var(--wb)}td.em{background:var(--eb)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.tile{display:block;border:1px solid var(--bd);border-radius:10px;padding:10px 12px;background:var(--cd);color:var(--tx);text-decoration:none}
+.tile:hover{border-color:var(--ac);background:var(--ab)}.tn{font-weight:700;font-size:14px;margin-bottom:6px;word-break:break-word}
+.bk{font-size:13px;padding:5px 10px;border:1px solid var(--bd);border-radius:6px;background:var(--cd);color:var(--ac);text-decoration:none;font-weight:600}
+.dvd{margin:14px 0 2px;font-size:14px;color:var(--ac);border-bottom:2px solid var(--ac);padding-bottom:2px}
+.up.sm .drop{padding:6px 10px;text-align:left}.up.sm .h{display:none}
+summary{cursor:pointer}
+</style></head><body><main>
+<h1>📋 Leitor da Base de Atividades</h1>
+<div class="card up" id="up">
+ <label class="drop" id="d1"><input type="file" accept=".xlsx,.xlsm,.xls,.csv"><b>1) Base de atividades</b><span class="h">Clique ou arraste o arquivo</span><div class="st" id="s1"></div></label>
+ <label class="drop" id="d2"><input type="file" accept=".xlsx,.xlsm,.xls,.csv"><b>2) Planilha de análise</b><span class="h">Clique ou arraste o arquivo</span><div class="st" id="s2"></div></label>
+</div>
+<details class="card" id="fc" hidden><summary><b>Informações a mostrar</b> <span class="mu">(clique para escolher as colunas)</span></summary><div class="chips" id="chips" style="margin-top:8px"></div></details>
+<div class="tabs" id="tabs" hidden><button class="tab on" data-t="a">📁 Análise da planilha</button><button class="tab" data-t="f">🔎 Consulta livre</button></div>
+<section id="pa"><div class="card mu">Suba as duas planilhas para gerar as pastas por curso. Só a base de atividades já libera a consulta livre.</div></section>
+<section id="pf" hidden>
+ <div class="card"><div class="row">
+  <input type="search" id="q" class="grow" placeholder="Ex.: estágio i educação física bacharel  ou  MATRIZ: 2024/1 | 6º SEMESTRE">
+  <select id="sc"><option value="n">Disciplina / oferta</option><option value="c">Só curso</option><option value="b">Curso + disciplina/oferta</option></select>
+  <select id="ch"><option value="">Todas as CH2</option></select></div>
+  <div class="mu" style="font-size:12px">Todas as palavras digitadas precisam aparecer (sem acento, maiúscula ou minúscula tanto faz).</div></div>
+ <div id="fr"></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const N=s=>String(s==null?"":s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/\s+/g," ").trim();
+const PP=s=>N(s).replace(/\s*\|\s*/g," | ");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let base=null,ana=null,groups=[],sel=new Set(),C={};
+const DEF=["FORMACAO DO SUPERVISOR","CAMPO / EMPRESA","HORARIO INICIO SEGUNDA","HORARIO FIM SEGUNDA","SABADO","DOMINGO"];
+function find(hs,alts,eq){for(const a of alts){const h=hs.find(h=>N(h)===N(a));if(h)return h}
+ if(!eq)for(const a of alts){const h=hs.find(h=>N(h).includes(N(a)));if(h)return h}return null}
+function pick(wb,need){let best=null;
+ for(const name of wb.SheetNames){const aoa=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,raw:false,defval:""});
+  for(let i=0;i<Math.min(aoa.length,25);i++){const hs=aoa[i].map(N);const sc=need.filter(n=>hs.includes(N(n))).length;
+   if(!best||sc>best.sc)best={sc,name,i,aoa}}}
+ if(!best||best.sc<2)return{err:"Não achei as colunas esperadas ("+need.join(", ")+") em nenhuma aba."};
+ const seen={};const hdr=best.aoa[best.i].map((h,k)=>{let t=String(h).trim()||("Coluna "+(k+1));if(seen[t]){seen[t]++;t+=" ("+seen[t]+")"}else seen[t]=1;return t});
+ const rows=best.aoa.slice(best.i+1).filter(r=>r.some(c=>String(c).trim()!=="")).map(r=>{const o={};hdr.forEach((h,k)=>o[h]=String(r[k]==null?"":r[k]).trim());return o});
+ return{headers:hdr,rows,sheet:best.name,sc:best.sc,total:need.length}}
+function load(file,need,done){const r=new FileReader();r.onload=e=>{try{done(pick(XLSX.read(e.target.result,{type:"array"}),need))}catch(x){done({err:"Não consegui ler o arquivo."})}};r.readAsArrayBuffer(file)}
+function wire(dz,sid,need,cb){const inp=dz.querySelector("input"),go=f=>{if(!f)return;$(sid).textContent="Lendo…";
+ load(f,need,r=>{if(r.err){$(sid).innerHTML='<span class="no">'+esc(r.err)+'</span>';return}
+  $(sid).innerHTML='<span class="ok">✔ '+esc(f.name)+'</span> · aba “'+esc(r.sheet)+'” · '+r.rows.length+' linhas · '+r.sc+'/'+r.total+' colunas-chave';cb(r)})};
+ inp.onchange=()=>go(inp.files[0]);
+ dz.ondragover=e=>{e.preventDefault();dz.classList.add("ov")};dz.ondragleave=()=>dz.classList.remove("ov");
+ dz.ondrop=e=>{e.preventDefault();dz.classList.remove("ov");go(e.dataTransfer.files[0])}}
+wire($("d1"),"s1",["CURSO","Nome da disciplina / Oferta","CH2","FORMAÇÃO DO SUPERVISOR","CAMPO / EMPRESA"],r=>{
+ base=r;const h=r.headers;C={id:find(h,["ID"],1)||find(h,["ID_CHAVE"],1),nm:find(h,["Nome da disciplina / Oferta","Nome da disciplina"]),cu:find(h,["CURSO"],1),ch:find(h,["CH2","CH"],1)};
+ r.rows.forEach(x=>{x._nb=PP(x[C.nm]);x._c=N(x[C.cu])});
+ sel=new Set(h.filter(c=>DEF.includes(N(c))));
+ const chs=[...new Set(r.rows.map(x=>x[C.ch]).filter(v=>v!==""))].sort((a,b)=>parseFloat(a)-parseFloat(b));
+ $("ch").innerHTML='<option value="">Todas as CH2</option>'+chs.map(v=>'<option>'+esc(v)+'</option>').join("");
+ $("fc").hidden=$("tabs").hidden=false;chipsR();build();renderF()});
+wire($("d2"),"s2",["CURSO","DISCIPLINA_ALUNO","TURMA","TOTAL_HORAS_EM_CAMPO"],r=>{ana=r;build()});
+function chipsR(){$("chips").innerHTML=base.headers.map(h=>'<span class="chip'+(sel.has(h)?' on':'')+'" data-h="'+esc(h)+'">'+esc(h)+'</span>').join("");
+ $("chips").onclick=e=>{const h=e.target.dataset.h;if(h==null)return;sel.has(h)?sel.delete(h):sel.add(h);chipsR();renderA();renderF()}}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));
+ $("pa").hidden=b.dataset.t!=="a";$("pf").hidden=b.dataset.t!=="f"});
+function cut(t){const n=PP(t),m=n.indexOf("MATRIZ");if(m<0)return"";let s=n.slice(m);const q=s.indexOf("| SEQ");if(q>=0)s=s.slice(0,q);return s.trim().replace(/\s*\|\s*$/,"")}
+const num=v=>{const x=parseFloat(String(v).replace(",","."));return isNaN(x)?null:x};
+function build(){if(!base||!ana)return;const h=ana.headers,
+ a={cu:find(h,["CURSO"],1),di:find(h,["DISCIPLINA_ALUNO"],1),tu:find(h,["TURMA"],1),ho:find(h,["TOTAL_HORAS_EM_CAMPO"],1)},m=new Map();
+ ana.rows.forEach(r=>{if(!r[a.di])return;const ct=cut(r[a.tu]),k=[N(r[a.cu]),N(r[a.di]),ct,r[a.ho]].join("¦");
+  if(!m.has(k))m.set(k,{curso:r[a.cu]||"(sem curso)",disc:r[a.di],cut:ct,horas:r[a.ho],n:0});m.get(k).n++});
+ groups=[...m.values()].map(match);$("up").classList.add("sm");renderA()}
+const SW=new Set(["DE","DA","DO","E","EM"]),TM={};
+const tk=s=>TM[s]||(TM[s]=N(s).replace(/[^A-Z0-9 ]/g," ").split(" ").filter(w=>w&&!SW.has(w)));
+function cm(a,b){const x=tk(a),y=tk(b);if(!x.length||!y.length)return false;return x.length===y.length&&x.every(w=>y.includes(w))}
+function match(g){const d=N(g.disc);let st="exato",note=[];
+ const pool=base.rows.filter(r=>cm(g.curso,r._c));let rs=pool.filter(r=>r._nb.includes(d)&&(!g.cut||r._nb.includes(g.cut)));
+ if(!rs.length&&g.cut){const mm=g.cut.match(/MATRIZ:\s*([\d\/]+)/),ss=g.cut.match(/(\d+)\S*\s*SEMESTRE/);
+  rs=pool.filter(r=>r._nb.includes(d)&&(!mm||r._nb.includes(mm[1]))&&(!ss||new RegExp("(^|\\D)"+ss[1]+"\\S*\\s*SEMESTRE").test(r._nb)));st="parcial"}
+ if(!rs.length){rs=pool.filter(r=>r._nb.includes(d));st="só disciplina"}
+ if(!rs.length){st="não encontrado";note.push(pool.length?"nenhuma linha deste curso na base com essa disciplina/matriz":"curso não localizado na base")}
+ const hh=num(g.horas);
+ if(hh!=null&&rs.length){const t=rs.filter(r=>num(r[C.ch])===hh);if(t.length)rs=t;else note.push("nenhuma linha com CH2 = "+g.horas+" · mostrando todas")}
+ return{...g,rows:rs,st,note}}
+function fmt(v){const n=N(v);if(v==="")return'<em class="mu">vazio</em>';if(n==="VERDADEIRO"||n==="TRUE")return'<span class="ok">✔ pode</span>';if(n==="FALSO"||n==="FALSE")return'<span class="no">✘ não</span>';return esc(v)}
+function consol(rows,f){const m=new Map();let e=0;rows.forEach(r=>{const v=r[f]||"";if(v===""){e++;return}const k=N(v);if(!m.has(k))m.set(k,{v,n:0});m.get(k).n++});return{vals:[...m.values()],e,t:rows.length}}
+function fieldH(rows,f){const c=consol(rows,f);let h="";
+ if(!c.vals.length)h='<span class="b er">Vazio em todos ('+c.t+')</span>';
+ else{if(c.vals.length>1)h+='<span class="b wn">Diverge: '+c.vals.length+' versões</span>';
+  if(c.e)h+='<span class="b er">Vazio em '+c.e+' de '+c.t+'</span>';
+  h+='<div class="vals">'+c.vals.map(x=>'<div>'+fmt(x.v)+(c.vals.length>1||c.e?' <span class="mu">('+x.n+' reg.)</span>':'')+'</div>').join("")+'</div>'}
+ return'<div class="fr"><div class="fn">'+esc(f)+'</div><div>'+h+'</div></div>'}
+function tbl(rows,dv,em){dv=dv||[];em=em||[];const cols=[C.id,C.nm,C.ch,...[...sel].filter(c=>![C.id,C.nm,C.ch].includes(c))].filter(Boolean);
+ return'<div class="tw"><table><tr>'+cols.map(c=>'<th>'+esc(c)+(dv.includes(c)?' ⚠':'')+'</th>').join("")+'</tr>'+rows.slice(0,300).map(r=>'<tr>'+cols.map(c=>'<td'+(!r[c]?' class="em"':dv.includes(c)?' class="dv"':'')+'>'+fmt(r[c]||"")+'</td>').join("")+'</tr>').join("")+'</table></div>'+(rows.length>300?'<div class="mu">Mostrando 300 de '+rows.length+'.</div>':"")}
+function body(rows){const f=[...sel].filter(c=>c!==C.nm&&c!==C.cu&&c!==C.id&&c!==C.ch),dv=[],em=[];
+ f.forEach(x=>{const c=consol(rows,x);if(c.vals.length>1)dv.push(x);if(c.e)em.push(x)});
+ return'<div style="margin:6px 0 2px">'+(dv.length?'<span class="b wn">⚠ Diverge: '+esc(dv.join(", "))+'</span>':'')+(em.length?'<span class="b er">Vazio: '+esc(em.join(", "))+'</span>':'')+(!dv.length&&!em.length&&f.length?'<span class="b ok">✔ Consistente</span>':'')+'</div>'+tbl(rows,dv,em)}
+let CS=[],cur=null;const RM={I:1,II:2,III:3,IV:4,V:5,VI:6,VII:7,VIII:8,IX:9,X:10};
+function lvl(d){const w=N(d).split(/[^A-Z0-9]+/);const i=Math.max(0,w.findIndex(x=>x.startsWith("ESTAGIO")));for(let k=i;k<w.length;k++)if(RM[w[k]])return RM[w[k]];return 99}
+function srt(a,b){return lvl(a.disc)-lvl(b.disc)||N(a.disc).localeCompare(N(b.disc))||a.cut.localeCompare(b.cut)||(num(a.horas)||0)-(num(b.horas)||0)}
+function bdg(gs){const bad=gs.filter(g=>g.st==="não encontrado").length,dv=gs.filter(g=>g.rows.length&&[...sel].some(f=>f!==C.nm&&f!==C.cu&&consol(g.rows,f).vals.length>1)).length;return'<span class="b ac">'+gs.length+' estágio(s)</span>'+(bad?'<span class="b er">'+bad+' não encontrado(s)</span>':'')+(dv?'<span class="b wn">'+dv+' com divergência</span>':'')}
+function fl2(i){const t=N(i.value).split(" ").filter(Boolean),el=$("pa");el.querySelectorAll(".gc").forEach(g=>g.classList.toggle("hid",!t.every(w=>g.dataset.q.includes(w))));el.querySelectorAll(".dvd").forEach(d=>{let n=d.nextElementSibling,v=false;while(n&&!n.classList.contains("dvd")){if(!n.classList.contains("hid"))v=true;n=n.nextElementSibling}d.classList.toggle("hid",!v)})}
+function renderA(){const el=$("pa");if(!base||!ana)return;
+ const by={};groups.forEach(g=>(by[g.curso]=by[g.curso]||[]).push(g));
+ CS=Object.keys(by).sort((a,b)=>a.localeCompare(b,"pt"));
+ const m=/^#c(\d+)$/.exec(location.hash);cur=m&&CS[+m[1]]!==undefined?+m[1]:null;
+ if(cur===null){
+  el.innerHTML='<div class="row"><span class="b ac">'+CS.length+' cursos</span><span class="b ac">'+groups.length+' disciplinas/ofertas</span><input type="search" id="cf" class="grow" placeholder="🔍 filtrar cursos"></div><div class="grid">'+CS.map((c,i)=>'<a class="tile" href="#c'+i+'" data-q="'+esc(N(c))+'"><div class="tn">📁 '+esc(c)+'</div>'+bdg(by[c])+'</a>').join("")+'</div>';
+  $("cf").oninput=function(){const t=N(this.value).split(" ").filter(Boolean);el.querySelectorAll(".tile").forEach(x=>x.classList.toggle("hid",!t.every(w=>x.dataset.q.includes(w))))};return}
+ const c=CS[cur],gs=by[c].slice().sort(srt);let last=null;
+ el.innerHTML='<div class="row"><a class="bk" href="#">← Voltar aos cursos</a><b>📁 '+esc(c)+'</b>'+bdg(gs)+'</div><div class="row"><input type="search" id="lf" class="grow" placeholder="🔍 matriz, semestre, disciplina…"></div><div>'+gs.map(g=>{const L=lvl(g.disc);let h="";if(L!==last){last=L;h='<h3 class="dvd">'+(L===99?"Outros":"Estágio "+Object.keys(RM).find(k=>RM[k]===L))+'</h3>'}
+  return h+'<div class="gc" data-q="'+esc(N(g.disc+" "+g.cut+" "+g.horas))+'"><div class="gt">'+esc(g.disc)+'</div><div class="sub">'+esc(g.cut||"sem matriz")+' · '+esc(g.horas||"?")+' h · '+g.n+' aluno(s)</div><span class="b '+(g.st==="exato"?"ok":g.st==="não encontrado"?"er":"wn")+'">'+g.st+'</span>'+g.note.map(n=>'<span class="b wn">'+esc(n)+'</span>').join("")+(g.rows.length?body(g.rows):'<div class="mu" style="margin-top:6px">Nenhuma atividade encontrada na base.</div>')+'</div>'}).join("")+'</div>';
+ $("lf").oninput=function(){fl2(this)}}
+addEventListener("hashchange",()=>{renderA();scrollTo(0,0)});
+function oldA(){const el=$("pa");if(!base||!ana){return}
+ const by={};groups.forEach(g=>(by[g.curso]=by[g.curso]||[]).push(g));
+ const cs=Object.keys(by).sort((a,b)=>a.localeCompare(b,"pt"));
+ el.innerHTML='<div class="row"><span class="b ac">'+cs.length+' cursos</span><span class="b ac">'+groups.length+' disciplinas/ofertas</span><button class="sm" id="ex">Abrir/fechar todas</button></div>'+
+ cs.map(c=>{const gs=by[c],bad=gs.filter(g=>g.st==="não encontrado").length,dv=gs.filter(g=>g.rows.length&&sel.size&&[...sel].some(f=>consol(g.rows,f).vals.length>1)).length;
+  return'<details class="fo"><summary>📁 '+esc(c)+' <span class="b ac">'+gs.length+'</span>'+(bad?'<span class="b er">'+bad+' não encontrada(s)</span>':'')+(dv?'<span class="b wn">'+dv+' com divergência</span>':'')+
+  '<input type="search" placeholder="🔍 matriz, semestre, disciplina…" onclick="event.stopPropagation()" oninput="flt(this)" style="margin-left:auto;font-weight:400"></summary><div class="fb">'+
+  gs.map(g=>'<div class="gc" data-q="'+esc(N(g.disc+" "+g.cut+" "+g.horas))+'"><div class="gt">'+esc(g.disc)+'</div><div class="sub">'+esc(g.cut||"sem matriz")+' · '+esc(g.horas||"?")+' h · '+g.n+' aluno(s)</div>'+
+  '<span class="b '+(g.st==="exato"?"ok":g.st==="não encontrado"?"er":"wn")+'">'+g.st+'</span>'+g.note.map(n=>'<span class="b wn">'+esc(n)+'</span>').join("")+
+  (g.rows.length?body(g.rows):'<div class="mu" style="margin-top:6px">Nenhuma atividade encontrada na base.</div>')+'</div>').join("")+'</div></details>'}).join("");
+ $("ex").onclick=()=>{const d=[...el.querySelectorAll("details")],o=d.some(x=>!x.open);d.forEach(x=>x.open=o)}}
+function flt(i){const t=N(i.value).split(" ").filter(Boolean);i.closest("details").querySelectorAll(".gc").forEach(g=>g.classList.toggle("hid",!t.every(w=>g.dataset.q.includes(w))))}
+function renderF(){if(!base)return;const t=PP($("q").value).split(" ").filter(x=>x&&x!=="|"),s=$("sc").value,ch=$("ch").value;
+ const rs=base.rows.filter(r=>{const hay=s==="c"?r._c:s==="b"?r._c+" "+r._nb:r._nb;return t.every(w=>hay.includes(w))&&(!ch||r[C.ch]===ch)});
+ $("fr").innerHTML=(!t.length&&!ch)?'<div class="card mu">Digite algo para pesquisar.</div>':'<div class="card"><span class="b ac">'+rs.length+' registro(s)</span>'+(rs.length?body(rs):"")+'</div>'}
+["q","sc","ch"].forEach(i=>$(i).addEventListener("input",renderF));
+</script></body></html>
